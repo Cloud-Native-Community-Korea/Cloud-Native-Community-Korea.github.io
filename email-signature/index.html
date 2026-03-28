@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CNCK Email Signature Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cn-deep: #0a0e1a;
+      --cn-surface: #111827;
+      --cn-card: #ffffff;
+      --cn-blue: #326ce5;
+      --cn-cyan: #93eaff;
+      --cn-sky: #0086ff;
+      --cn-text: #0f172a;
+      --cn-muted: #64748b;
+      --cn-border: #e2e8f0;
+      --cn-bg: #f0f4f8;
+      --radius: 10px;
+      --font-body: "Plus Jakarta Sans", sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--cn-bg);
+      color: var(--cn-text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Subtle grid background ── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(50,108,229,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(50,108,229,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      position: relative;
+      background: linear-gradient(135deg, var(--cn-deep) 0%, #162040 50%, #1a2a52 100%);
+      padding: 28px 32px 24px;
+      overflow: hidden;
+    }
+
+    .site-header::before {
+      content: "";
+      position: absolute;
+      top: -60%;
+      right: -10%;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(147,234,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .site-header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cn-blue), var(--cn-cyan), var(--cn-sky));
+    }
+
+    .header-inner {
+      position: relative;
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--cn-blue), var(--cn-sky));
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .header-badge svg { display: block; }
+
+    .site-header h1 {
+      font-family: var(--font-body);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .site-header h1 .accent {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--cn-cyan);
+      letter-spacing: 0.04em;
+    }
+
+    .site-header .subtitle {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* ── Main layout ── */
+    .main {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: row;
+      gap: 28px;
+      max-width: 1140px;
+      margin: 32px auto;
+      padding: 0 24px;
+      align-items: flex-start;
+      animation: fadeUp 0.5s ease-out both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Form panel ── */
+    .form-panel {
+      width: 380px;
+      flex-shrink: 0;
+      background: var(--cn-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--cn-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
+      padding: 28px;
+      animation: fadeUp 0.5s 0.1s ease-out both;
+    }
+
+    .panel-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cn-muted);
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--cn-border);
+    }
+
+    .field { margin-bottom: 20px; }
+
+    .field-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--cn-text);
+      margin-bottom: 7px;
+    }
+
+    .field-label .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .field-label .optional {
+      font-weight: 400;
+      color: var(--cn-muted);
+      font-size: 0.75rem;
+      margin-left: 4px;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1px solid var(--cn-border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: var(--font-body);
+      color: var(--cn-text);
+      background: #fafbfc;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      outline: none;
+    }
+
+    .text-input::placeholder { color: #b0bec5; }
+
+    .text-input:focus {
+      border-color: var(--cn-blue);
+      box-shadow: 0 0 0 3px rgba(50,108,229,0.1);
+      background: #fff;
+    }
+
+    /* ── Segmented control ── */
+    .seg-control {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .seg-control input { display: none; }
+
+    .seg-control label {
+      flex: 1;
+      text-align: center;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--cn-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .seg-control input:checked + label {
+      background: #fff;
+      color: var(--cn-text);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .seg-control label:hover {
+      color: var(--cn-text);
+    }
+
+    /* ── Copy button ── */
+    .btn-copy {
+      width: 100%;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--cn-blue) 0%, var(--cn-sky) 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 6px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-copy::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .btn-copy:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(50,108,229,0.35);
+    }
+
+    .btn-copy:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-copy:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-copy.copied {
+      background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+    }
+
+    .btn-copy svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Preview panel ── */
+    .preview-panel {
+      flex: 1;
+      background: var(--cn-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--cn-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
+      padding: 28px;
+      min-width: 0;
+      animation: fadeUp 0.5s 0.2s ease-out both;
+    }
+
+    .preview-area {
+      border: 2px dashed #d1d8e0;
+      border-radius: 8px;
+      min-height: 160px;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 10px,
+          rgba(50,108,229,0.008) 10px,
+          rgba(50,108,229,0.008) 20px
+        );
+      transition: border-color 0.2s;
+    }
+
+    .preview-area.has-content {
+      display: block;
+      border-style: solid;
+      border-color: var(--cn-border);
+      background: #fff;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #b0bec5;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .empty-state .icon-wrap {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state .icon-wrap svg {
+      opacity: 0.35;
+    }
+
+    /* ── Footer hint ── */
+    .footer-hint {
+      text-align: center;
+      color: var(--cn-muted);
+      font-size: 0.72rem;
+      padding: 16px 24px 32px;
+      position: relative;
+      z-index: 1;
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    .footer-hint a {
+      color: var(--cn-blue);
+      text-decoration: none;
+    }
+
+    .footer-hint a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .site-header { padding: 22px 20px 18px; }
+      .main {
+        flex-direction: column;
+        padding: 0 16px;
+        margin: 20px auto;
+        gap: 16px;
+      }
+      .form-panel { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2Z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <div>
+        <h1><span class="accent">CNCK</span> Email Signature Generator</h1>
+        <div class="subtitle">Cloud Native Community Korea</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="form-panel" aria-label="Signature settings">
+      <div class="panel-label">Configuration</div>
+
+      <div class="field">
+        <label class="field-label">Logo Style</label>
+        <div class="seg-control">
+          <input type="radio" name="logoStyle" id="styleHorizontal" value="horizontal" checked />
+          <label for="styleHorizontal">Horizontal</label>
+          <input type="radio" name="logoStyle" id="styleVertical" value="vertical" />
+          <label for="styleVertical">Vertical</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="inputName">Name <span class="req" aria-hidden="true">*</span></label>
+        <input class="text-input" type="text" id="inputName" placeholder="Gildong Hong" autocomplete="name" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="inputPhone">Phone <span class="optional">(optional)</span></label>
+        <input class="text-input" type="tel" id="inputPhone" placeholder="+82 10-0000-0000" autocomplete="tel" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="inputEmail">Email <span class="optional">(optional)</span></label>
+        <input class="text-input" type="email" id="inputEmail" placeholder="you@example.com" autocomplete="email" />
+      </div>
+
+      <button class="btn-copy" id="btnCopy" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy to Clipboard
+      </button>
+    </section>
+
+    <section class="preview-panel" aria-label="Signature preview">
+      <div class="panel-label">Preview</div>
+      <div class="preview-area" id="previewArea">
+        <div class="empty-state" id="emptyState">
+          <div class="icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2Z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          Enter your name to see the signature preview
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer-hint">
+    <a href="https://community.cncf.io/cloud-native-community-korea/" target="_blank">Cloud Native Community Korea</a>
+  </div>
+
+  <script>
+    // ── Constants ──────────────────────────────────────────────────────────────
+    const LOGO_HORIZONTAL = "https://raw.githubusercontent.com/Cloud-Native-Community-Korea/community/3677964376da90116a3565cee3cabed75af87c18/asset/logo/cnck-logo-horizontal.svg";
+    const LOGO_VERTICAL   = "https://raw.githubusercontent.com/Cloud-Native-Community-Korea/community/3677964376da90116a3565cee3cabed75af87c18/asset/logo/cnck-logo-vertical-korea-color.svg";
+    const COMMUNITY_URL   = "https://community.cncf.io/cloud-native-community-korea/";
+
+    // ── DOM refs ───────────────────────────────────────────────────────────────
+    const inputName   = document.getElementById("inputName");
+    const inputPhone  = document.getElementById("inputPhone");
+    const inputEmail  = document.getElementById("inputEmail");
+    const btnCopy     = document.getElementById("btnCopy");
+    const previewArea = document.getElementById("previewArea");
+    const emptyState  = document.getElementById("emptyState");
+
+    // ── Signature HTML builder ─────────────────────────────────────────────────
+
+    function buildSignatureHTML({ style, name, phone, email }) {
+      const FONT = "Arial, sans-serif";
+      const BLUE = "#326ce5";
+      const GRAY = "#6b7280";
+      const DARK = "#1a1a2e";
+
+      const logoSrc   = style === "vertical" ? LOGO_HORIZONTAL : LOGO_VERTICAL;
+      const logoWidth = style === "vertical" ? 100 : 80;
+
+      const logoCell = `<a href="${COMMUNITY_URL}" target="_blank" style="display:inline-block;text-decoration:none;">` +
+        `<img src="${logoSrc}" width="${logoWidth}" alt="Cloud Native Community Korea logo" style="display:block;border:0;" />` +
+        `</a>`;
+
+      const communityLink = `<a href="${COMMUNITY_URL}" target="_blank" style="color:${BLUE};font-family:${FONT};font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:-0.01em;">Cloud Native Community Korea</a>`;
+      const nameLine = `<span style="font-family:${FONT};font-size:13px;color:${DARK};font-weight:bold;">${escapeHtml(name)}</span>`;
+
+      // Contact lines with unicode icons for better scannability
+      const phoneLine = phone
+        ? `<span style="font-family:${FONT};font-size:12px;color:${GRAY};">&#9742; ${escapeHtml(phone)}</span>`
+        : "";
+      const emailLine = email
+        ? `<a href="mailto:${escapeHtml(email)}" style="font-family:${FONT};font-size:12px;color:${GRAY};text-decoration:none;">&#9993; ${escapeHtml(email)}</a>`
+        : "";
+
+      // Build contact block (name + optional phone/email)
+      const contactParts = [nameLine, phoneLine, emailLine].filter(Boolean);
+
+      if (style === "horizontal") {
+        // Two-column: logo | separator | info block
+        const infoBlock =
+          communityLink + `<br />` +
+          contactParts.join(`<br />`);
+
+        return (
+          `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};">` +
+            `<tr>` +
+              `<td style="padding:0 14px 0 0;vertical-align:middle;">${logoCell}</td>` +
+              `<td style="border-left:2px solid ${BLUE};padding:6px 0 6px 14px;vertical-align:middle;">` +
+                infoBlock +
+              `</td>` +
+            `</tr>` +
+          `</table>`
+        );
+      } else {
+        // Vertical stacked layout
+        const contactRows = contactParts.map(line =>
+          `<tr><td style="padding:1px 0;">${line}</td></tr>`
+        ).join("");
+
+        return (
+          `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${FONT};">` +
+            `<tr><td style="padding:0 0 10px 0;">${logoCell}</td></tr>` +
+            `<tr><td style="padding:0 0 4px 0;">${communityLink}</td></tr>` +
+            contactRows +
+          `</table>`
+        );
+      }
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ── Live preview ──────────────────────────────────────────────────────────
+
+    function getFormValues() {
+      const style = document.querySelector('input[name="logoStyle"]:checked').value;
+      return {
+        style,
+        name:  inputName.value.trim(),
+        phone: inputPhone.value.trim(),
+        email: inputEmail.value.trim(),
+      };
+    }
+
+    function updatePreview() {
+      const { style, name, phone, email } = getFormValues();
+
+      if (!name) {
+        previewArea.classList.remove("has-content");
+        previewArea.innerHTML = "";
+        previewArea.appendChild(emptyState);
+        btnCopy.disabled = true;
+        return;
+      }
+
+      const html = buildSignatureHTML({ style, name, phone, email });
+      previewArea.classList.add("has-content");
+      previewArea.innerHTML = html;
+      btnCopy.disabled = false;
+    }
+
+    // ── Clipboard copy ────────────────────────────────────────────────────────
+
+    async function copyToClipboard() {
+      const { style, name, phone, email } = getFormValues();
+      if (!name) return;
+
+      const html = buildSignatureHTML({ style, name, phone, email });
+
+      try {
+        const blob = new Blob([html], { type: "text/html" });
+        const item = new ClipboardItem({ "text/html": blob });
+        await navigator.clipboard.write([item]);
+        showCopied();
+      } catch (_err) {
+        try {
+          const temp = document.createElement("div");
+          temp.style.cssText = "position:fixed;pointer-events:none;opacity:0;";
+          temp.innerHTML = html;
+          document.body.appendChild(temp);
+
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(temp);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          document.execCommand("copy");
+          selection.removeAllRanges();
+          document.body.removeChild(temp);
+          showCopied();
+        } catch (fallbackErr) {
+          alert("Could not copy to clipboard. Please copy manually from the preview.");
+        }
+      }
+    }
+
+    function showCopied() {
+      const icon = btnCopy.querySelector("svg");
+      btnCopy.innerHTML = "";
+      // Checkmark icon
+      const check = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      check.setAttribute("viewBox", "0 0 24 24");
+      check.setAttribute("fill", "none");
+      check.setAttribute("stroke", "currentColor");
+      check.setAttribute("stroke-width", "2.5");
+      check.setAttribute("stroke-linecap", "round");
+      check.setAttribute("stroke-linejoin", "round");
+      check.style.width = "16px";
+      check.style.height = "16px";
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      path.setAttribute("points", "20 6 9 17 4 12");
+      check.appendChild(path);
+      btnCopy.appendChild(check);
+      btnCopy.appendChild(document.createTextNode(" Copied!"));
+      btnCopy.classList.add("copied");
+
+      setTimeout(() => {
+        btnCopy.classList.remove("copied");
+        btnCopy.innerHTML = "";
+        const copyIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        copyIcon.setAttribute("viewBox", "0 0 24 24");
+        copyIcon.setAttribute("fill", "none");
+        copyIcon.setAttribute("stroke", "currentColor");
+        copyIcon.setAttribute("stroke-width", "2");
+        copyIcon.setAttribute("stroke-linecap", "round");
+        copyIcon.setAttribute("stroke-linejoin", "round");
+        copyIcon.style.width = "16px";
+        copyIcon.style.height = "16px";
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", "9");
+        rect.setAttribute("y", "9");
+        rect.setAttribute("width", "13");
+        rect.setAttribute("height", "13");
+        rect.setAttribute("rx", "2");
+        rect.setAttribute("ry", "2");
+        const p2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        p2.setAttribute("d", "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1");
+        copyIcon.appendChild(rect);
+        copyIcon.appendChild(p2);
+        btnCopy.appendChild(copyIcon);
+        btnCopy.appendChild(document.createTextNode(" Copy to Clipboard"));
+      }, 2000);
+    }
+
+    // ── Event listeners ───────────────────────────────────────────────────────
+
+    inputName.addEventListener("input",  updatePreview);
+    inputPhone.addEventListener("input", updatePreview);
+    inputEmail.addEventListener("input", updatePreview);
+    document.querySelectorAll('input[name="logoStyle"]').forEach(radio => {
+      radio.addEventListener("change", updatePreview);
+    });
+    btnCopy.addEventListener("click", copyToClipboard);
+
+    updatePreview();
+  </script>
+
+</body>
+</html>
